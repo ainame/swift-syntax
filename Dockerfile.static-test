@@ -16,16 +16,13 @@ RUN curl -sL -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar
 ENV SWIFTLY_HOME_DIR=/root/.local/share/swiftly
 ENV PATH="${SWIFTLY_HOME_DIR}/bin:${PATH}"
 
-# Install Swift DEVELOPMENT-SNAPSHOT-2025-09-07-a
+# Install Swift 6.2
 RUN . "${SWIFTLY_HOME_DIR}/env.sh" && \
-    swiftly install swift-DEVELOPMENT-SNAPSHOT-2025-09-07-a --assume-yes && \
-    swiftly use swift-DEVELOPMENT-SNAPSHOT-2025-09-07-a && \
     hash -r
 
 # Install static SDK snapshot
 RUN . "${SWIFTLY_HOME_DIR}/env.sh" && \
-    swift sdk install https://download.swift.org/development/static-sdk/swift-DEVELOPMENT-SNAPSHOT-2025-09-07-a/swift-DEVELOPMENT-SNAPSHOT-2025-09-07-a_static-linux-0.0.1.artifactbundle.tar.gz \
-      --checksum 81a71e1357c444b845a37ad34f63a6585a9036ad184ae0c940e40b7286e8aa5b
+    swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378
 
 # Verify Swift version
 RUN . "${SWIFTLY_HOME_DIR}/env.sh" && swift --version
