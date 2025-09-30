@@ -38,16 +38,17 @@ CMD . "${SWIFTLY_HOME_DIR}/env.sh" && \
     echo "" && \
     echo "Step 2: Building ManifestCrashTest with static SDK..." && \
     swift build \
+      -c release \
       --product ManifestCrashTest \
       --swift-sdk aarch64-swift-linux-musl && \
     echo "" && \
     echo "Step 3: Verifying binary is statically linked..." && \
-    file .build/aarch64-swift-linux-musl/debug/ManifestCrashTest && \
-    ldd .build/aarch64-swift-linux-musl/debug/ManifestCrashTest 2>&1 || echo "✓ Binary is statically linked (no dynamic dependencies)" && \
+    file .build/aarch64-swift-linux-musl/release/ManifestCrashTest && \
+    ldd .build/aarch64-swift-linux-musl/release/ManifestCrashTest 2>&1 || echo "✓ Binary is statically linked (no dynamic dependencies)" && \
     echo "" && \
     echo "Step 4: Running ManifestCrashTest..." && \
     echo "================================" && \
-    .build/aarch64-swift-linux-musl/debug/ManifestCrashTest && \
+    .build/aarch64-swift-linux-musl/release/ManifestCrashTest && \
     echo "================================" && \
     echo "" && \
     echo "✓ Test completed successfully!" && \
