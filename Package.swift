@@ -390,6 +390,13 @@ let package = Package(
       dependencies: ["_SwiftSyntaxTestSupport", "SwiftRefactor"]
     ),
 
+    // MARK: ManifestCrashTest
+
+    .executableTarget(
+      name: "ManifestCrashTest",
+      dependencies: ["SwiftParser", "SwiftSyntax"]
+    ),
+
     // MARK: - Deprecated targets
 
     // MARK: PerformanceTest
