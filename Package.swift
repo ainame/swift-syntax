@@ -394,7 +394,7 @@ let package = Package(
 
     .executableTarget(
       name: "ManifestCrashTest",
-      dependencies: ["SwiftParser", "SwiftSyntax"]
+      dependencies: ["SwiftParser"],
     ),
 
     // MARK: - Deprecated targets
