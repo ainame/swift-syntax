@@ -8,21 +8,22 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Swiftly
-RUN curl -sL -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && \
+RUN curl -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && \
     tar zxf swiftly-$(uname -m).tar.gz && \
-    echo "Y" | ./swiftly init --quiet-shell-followup --no-modify-profile --skip-install && \
-    rm -f swiftly-$(uname -m).tar.gz
+    ./swiftly init --quiet-shell-followup && \
+    . "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh" && \
+    hash -r
 
 ENV SWIFTLY_HOME_DIR=/root/.local/share/swiftly
 ENV PATH="${SWIFTLY_HOME_DIR}/bin:${PATH}"
 
+RUN . "${SWIFTLY_HOME_DIR}/env.sh" && swift --version
+
 # Install Swift 6.2
-RUN . "${SWIFTLY_HOME_DIR}/env.sh" && \
-    hash -r
+RUN . "${SWIFTLY_HOME_DIR}/env.sh" && hash -r && swiftly use 6.2
 
 # Install static SDK snapshot
-RUN . "${SWIFTLY_HOME_DIR}/env.sh" && \
-    swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378
+RUN . "${SWIFTLY_HOME_DIR}/env.sh" && swift sdk install https://download.swift.org/swift-6.2-release/static-sdk/swift-6.2-RELEASE/swift-6.2-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz --checksum d2225840e592389ca517bbf71652f7003dbf45ac35d1e57d98b9250368769378
 
 # Verify Swift version
 RUN . "${SWIFTLY_HOME_DIR}/env.sh" && swift --version
@@ -36,17 +37,17 @@ CMD . "${SWIFTLY_HOME_DIR}/env.sh" && \
     swift sdk list && \
     echo "" && \
     echo "Step 2: Building ManifestCrashTest with static SDK..." && \
-    swift build -c release \
+    swift build \
       --product ManifestCrashTest \
       --swift-sdk x86_64-swift-linux-musl && \
     echo "" && \
     echo "Step 3: Verifying binary is statically linked..." && \
-    file .build/x86_64-swift-linux-musl/release/ManifestCrashTest && \
-    ldd .build/x86_64-swift-linux-musl/release/ManifestCrashTest 2>&1 || echo "✓ Binary is statically linked (no dynamic dependencies)" && \
+    file .build/x86_64-swift-linux-musl/debug/ManifestCrashTest && \
+    ldd .build/x86_64-swift-linux-musl/debug/ManifestCrashTest 2>&1 || echo "✓ Binary is statically linked (no dynamic dependencies)" && \
     echo "" && \
     echo "Step 4: Running ManifestCrashTest..." && \
     echo "================================" && \
-    .build/x86_64-swift-linux-musl/release/ManifestCrashTest && \
+    .build/x86_64-swift-linux-musl/debug/ManifestCrashTest && \
     echo "================================" && \
     echo "" && \
     echo "✓ Test completed successfully!" && \
