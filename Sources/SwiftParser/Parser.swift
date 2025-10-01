@@ -381,13 +381,20 @@ public struct Parser {
 
   mutating func consumeAnyTokenWithoutAdjustingNestingLevel() -> RawTokenSyntax {
     let tok = self.currentToken
+    // Materialize wholeText before advance() to avoid accessing potentially
+    // invalidated UnsafePointer after lexeme state changes (particularly on
+    // musl where allocator behavior differs). See: rdar://problem/manifestcrash
+    let tokenKind = tok.rawTokenKind
+    let wholeText = tok.wholeText
+    let textRange = tok.textRange
+    let diagnostic = tok.diagnostic
     self.currentToken = self.lexemes.advance()
     return RawTokenSyntax(
-      kind: tok.rawTokenKind,
-      wholeText: tok.wholeText,
-      textRange: tok.textRange,
+      kind: tokenKind,
+      wholeText: wholeText,
+      textRange: textRange,
       presence: .present,
-      tokenDiagnostic: tok.diagnostic,
+      tokenDiagnostic: diagnostic,
       arena: arena
     )
   }
@@ -802,10 +809,16 @@ extension Parser {
       tokenDiagnostic = nil
     }
 
+    // Materialize wholeText before resetForSplit to avoid accessing potentially
+    // invalidated UnsafePointer (particularly on musl).
+    let wholeText = current.wholeText
+    let textRange = current.textRange
+    let leadingTriviaByteLength = current.leadingTriviaByteLength
+
     let tok = RawTokenSyntax(
       kind: tokenKind,
-      wholeText: SyntaxText(rebasing: current.wholeText[..<endIndex]),
-      textRange: current.textRange.lowerBound..<endIndex,
+      wholeText: SyntaxText(rebasing: wholeText[..<endIndex]),
+      textRange: textRange.lowerBound..<endIndex,
       presence: .present,
       tokenDiagnostic: tokenDiagnostic,
       arena: self.arena
@@ -815,7 +828,7 @@ extension Parser {
 
     self.currentToken = self.lexemes.resetForSplit(
       splitToken: self.currentToken,
-      consumedPrefix: self.currentToken.leadingTriviaByteLength + prefix.count
+      consumedPrefix: leadingTriviaByteLength + prefix.count
     )
     return tok
   }
