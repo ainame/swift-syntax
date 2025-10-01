@@ -450,6 +450,36 @@ extension Parser {
 extension Parser: TokenConsumer {}
 
 extension Parser {
+  /// Direct implementations of TokenConsumer methods to bypass protocol witness dispatch
+  /// which can crash on musl + ARM64 + static linking due to ABI issues.
+
+  /// Returns whether the current token matches `spec` - bypasses protocol dispatch
+  @inline(__always)
+  mutating func at(_ spec: TokenSpec) -> Bool {
+    return spec ~= self.currentToken
+  }
+
+  /// Returns whether the current token matches one of two specs - bypasses protocol dispatch
+  @inline(__always)
+  mutating func at(_ spec1: TokenSpec, _ spec2: TokenSpec) -> Bool {
+    switch self.currentToken {
+    case spec1: return true
+    case spec2: return true
+    default: return false
+    }
+  }
+
+  /// Returns whether the current token matches one of three specs - bypasses protocol dispatch
+  @inline(__always)
+  mutating func at(_ spec1: TokenSpec, _ spec2: TokenSpec, _ spec3: TokenSpec) -> Bool {
+    switch self.currentToken {
+    case spec1: return true
+    case spec2: return true
+    case spec3: return true
+    default: return false
+    }
+  }
+
   /// Consumes the current token and sets its kind to the given ``TokenKind``,
   /// then advances the lexer to the next token.
   ///
