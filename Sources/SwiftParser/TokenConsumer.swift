@@ -82,12 +82,15 @@ extension TokenConsumer {
   /// Returns whether the current token matches `spec`
   @inline(__always)
   mutating func at(_ spec: TokenSpec) -> Bool {
+    // Cache currentToken to avoid multiple protocol witness dispatches
+    // which can cause crashes on musl + ARM64 + static linking
+    let token = self.currentToken
     #if SWIFTPARSER_ENABLE_ALTERNATE_TOKEN_INTROSPECTION
     if shouldRecordAlternativeTokenChoices {
-      recordAlternativeTokenChoice(for: self.currentToken, choices: [spec])
+      recordAlternativeTokenChoice(for: token, choices: [spec])
     }
     #endif
-    return spec ~= self.currentToken
+    return spec ~= token
   }
 
   /// Returns whether the current token matches one of the two specs.
@@ -96,12 +99,15 @@ extension TokenConsumer {
     _ spec1: TokenSpec,
     _ spec2: TokenSpec
   ) -> Bool {
+    // Cache currentToken to avoid multiple protocol witness dispatches
+    // which can cause crashes on musl + ARM64 + static linking
+    let token = self.currentToken
     #if SWIFTPARSER_ENABLE_ALTERNATE_TOKEN_INTROSPECTION
     if shouldRecordAlternativeTokenChoices {
-      recordAlternativeTokenChoice(for: self.currentToken, choices: [spec1, spec2])
+      recordAlternativeTokenChoice(for: token, choices: [spec1, spec2])
     }
     #endif
-    switch self.currentToken {
+    switch token {
     case spec1: return true
     case spec2: return true
     default: return false
@@ -115,12 +121,15 @@ extension TokenConsumer {
     _ spec2: TokenSpec,
     _ spec3: TokenSpec
   ) -> Bool {
+    // Cache currentToken to avoid multiple protocol witness dispatches
+    // which can cause crashes on musl + ARM64 + static linking
+    let token = self.currentToken
     #if SWIFTPARSER_ENABLE_ALTERNATE_TOKEN_INTROSPECTION
     if shouldRecordAlternativeTokenChoices {
-      recordAlternativeTokenChoice(for: self.currentToken, choices: [spec1, spec2, spec3])
+      recordAlternativeTokenChoice(for: token, choices: [spec1, spec2, spec3])
     }
     #endif
-    switch self.currentToken {
+    switch token {
     case spec1: return true
     case spec2: return true
     case spec3: return true
@@ -131,7 +140,10 @@ extension TokenConsumer {
   /// Returns whether the current token is an operator with the given `name`.
   @inline(__always)
   mutating func atContextualPunctuator(_ name: SyntaxText) -> Bool {
-    return self.currentToken.isContextualPunctuator(name)
+    // Cache currentToken to avoid protocol witness dispatch
+    // which can cause crashes on musl + ARM64 + static linking
+    let token = self.currentToken
+    return token.isContextualPunctuator(name)
   }
 
   /// Checks whether the parser is currently positioned at any token in `Subset`.
@@ -141,13 +153,16 @@ extension TokenConsumer {
   mutating func at<SpecSet: TokenSpecSet>(
     anyIn specSet: SpecSet.Type
   ) -> (spec: SpecSet, handle: TokenConsumptionHandle)? {
+    // Cache currentToken to avoid multiple protocol witness dispatches
+    // which can cause crashes on musl + ARM64 + static linking
+    let token = self.currentToken
     #if SWIFTPARSER_ENABLE_ALTERNATE_TOKEN_INTROSPECTION
     if shouldRecordAlternativeTokenChoices {
-      recordAlternativeTokenChoice(for: self.currentToken, choices: specSet.allCases.map(\.spec))
+      recordAlternativeTokenChoice(for: token, choices: specSet.allCases.map(\.spec))
     }
     #endif
-    if let matchedKind = SpecSet(lexeme: self.currentToken, experimentalFeatures: self.experimentalFeatures) {
-      precondition(matchedKind.spec ~= self.currentToken)
+    if let matchedKind = SpecSet(lexeme: token, experimentalFeatures: self.experimentalFeatures) {
+      precondition(matchedKind.spec ~= token)
       return (
         matchedKind,
         TokenConsumptionHandle(spec: matchedKind.spec)
@@ -167,16 +182,22 @@ extension TokenConsumer {
     return matchedKind
   }
 
-  /// Whether the current token’s text starts with the given prefix.
+  /// Whether the current token's text starts with the given prefix.
   @inline(__always)
   mutating func at(prefix: SyntaxText) -> Bool {
-    return self.currentToken.tokenText.hasPrefix(prefix)
+    // Cache currentToken to avoid protocol witness dispatch
+    // which can cause crashes on musl + ARM64 + static linking
+    let token = self.currentToken
+    return token.tokenText.hasPrefix(prefix)
   }
 
   /// Whether the current token is at the start of a line.
   @inline(__always)
   var atStartOfLine: Bool {
-    return self.currentToken.isAtStartOfLine
+    // Cache currentToken to avoid protocol witness dispatch
+    // which can cause crashes on musl + ARM64 + static linking
+    let token = self.currentToken
+    return token.isAtStartOfLine
   }
 
   /// Eat a token that we know we are currently positioned at, based on `at(anyIn:)`.
