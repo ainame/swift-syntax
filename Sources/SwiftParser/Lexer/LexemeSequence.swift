@@ -20,6 +20,7 @@ extension Lexer {
   /// A sequence of ``Lexer/Lexeme`` tokens starting from a ``Lexer/Cursor``
   /// that points into an input buffer.
   @_spi(Testing)
+  @_alignment(8)  // Ensure proper alignment on ARM64 for musl
   public struct LexemeSequence: IteratorProtocol, Sequence, CustomDebugStringConvertible {
     fileprivate let sourceBufferStart: Lexer.Cursor
     fileprivate var cursor: Lexer.Cursor
@@ -36,7 +37,7 @@ extension Lexer {
     /// usually less than 0.1% of the memory allocated by the syntax arena.
     var lexerStateAllocator = BumpPtrAllocator(initialSlabSize: 256)
 
-    /// The offset of the trailing trivia end of `nextToken` relative to the source buffer’s start.
+    /// The offset of the trailing trivia end of `nextToken` relative to the source buffer's start.
     var offsetToNextTokenEnd: Int {
       self.offsetToStart(self.nextToken) + self.nextToken.byteLength
     }

@@ -90,6 +90,7 @@
 /// The exception to this is parser lookahead, which is allowed to skip as many
 /// tokens as needed to disambiguate a parse. However, because lookahead
 /// operates on a copy of the lexical stream, no input tokens are lost..
+@_alignment(8)  // Ensure proper alignment on ARM64 for musl
 public struct Parser {
   var arena: ParsingRawSyntaxArena
 
