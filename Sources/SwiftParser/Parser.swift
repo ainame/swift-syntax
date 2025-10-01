@@ -480,6 +480,27 @@ extension Parser {
     }
   }
 
+  /// If the current token matches `spec`, consume the token and return it - bypasses protocol dispatch
+  @inline(__always)
+  mutating func consume(if spec: TokenSpec) -> RawTokenSyntax? {
+    if spec ~= self.currentToken {
+      return self.eat(spec)
+    }
+    return nil
+  }
+
+  /// If the current token matches one of the specs, consume the token and return it - bypasses protocol dispatch
+  @inline(__always)
+  mutating func consume(if spec1: TokenSpec, _ spec2: TokenSpec) -> RawTokenSyntax? {
+    if let token = consume(if: spec1) {
+      return token
+    } else if let token = consume(if: spec2) {
+      return token
+    } else {
+      return nil
+    }
+  }
+
   /// Consumes the current token and sets its kind to the given ``TokenKind``,
   /// then advances the lexer to the next token.
   ///
